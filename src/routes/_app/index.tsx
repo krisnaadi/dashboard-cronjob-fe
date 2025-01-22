@@ -6,8 +6,8 @@ export const Route = createFileRoute('/_app/')({
 
 function HomeComponent() {
   return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
+    <div className="space-y-4">
+      <h3>Cronjob List</h3>
     </div>
   )
 }
