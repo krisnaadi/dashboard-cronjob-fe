@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Link } from '@tanstack/react-router'
 import axios from 'axios'
 import { useState } from 'react'
+import { useToast } from '@/hooks/use-toast'
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginForm,
@@ -43,6 +44,8 @@ function LoginForm() {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  const { toast } = useToast()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +62,11 @@ function LoginForm() {
         navigate({ to: '/' })
       })
       .catch(error => {
-        console.log(error);
+        toast({
+          title: "Error",
+          description: error.response.data.message,
+          variant: "destructive",
+        })
       })
     setLoading(false);
   }
