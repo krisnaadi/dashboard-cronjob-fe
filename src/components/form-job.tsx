@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Switch } from "./ui/switch";
 import { Job } from "./types";
+import { useState } from "react";
 
 const formSchema = z.object({
   id: z.string().optional(), // Optional ID for update operations
@@ -47,7 +48,10 @@ export default function FormJob({
     },
   });
 
+  const [loading, setLoading] = useState<boolean>(false);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     try {
       const config = {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
@@ -63,6 +67,7 @@ export default function FormJob({
     } catch (error) {
       console.error("Error saving data", error);
     }
+    setLoading(false);
   }
 
   return (
@@ -124,8 +129,8 @@ export default function FormJob({
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Save
+          <Button type="submit" className="w-full" disabled={loading}>
+            Save {loading && "..."}
           </Button>
         </div>
       </form>

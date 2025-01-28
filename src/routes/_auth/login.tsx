@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Link } from '@tanstack/react-router'
 import axios from 'axios'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginForm,
@@ -38,6 +39,8 @@ const formSchema = z.object({
 function LoginForm() {
   const navigate = useNavigate({ from: '/login' })
 
+  const [loading, setLoading] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,8 +49,9 @@ function LoginForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    axios.post('http://localhost:8080/api/v1/auth/login', values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    await axios.post('http://localhost:8080/api/v1/auth/login', values)
       .then(response => {
         localStorage.setItem("accessToken", response.data.data.token);
         navigate({ to: '/' })
@@ -55,7 +59,7 @@ function LoginForm() {
       .catch(error => {
         console.log(error);
       })
-    
+    setLoading(false);
   }
   return (
     <div className="flex flex-col gap-6">
@@ -96,8 +100,8 @@ function LoginForm() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  Login
+                <Button type="submit" className="w-full" disabled={loading}>
+                  Login {loading && '...'}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

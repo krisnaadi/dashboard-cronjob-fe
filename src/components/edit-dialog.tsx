@@ -9,7 +9,7 @@ import {
 import { Button } from "./ui/button";
 import { Edit } from "lucide-react";
 import { useState } from "react";
-import FormJob from "./form-edit";
+import FormJob from "./form-job";
 import { Job } from "./types";
 
 export default function EditDialog({
