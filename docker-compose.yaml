@@ -1,0 +1,8 @@
+services:
+  docker-cronjob-fe:
+    build:
+      context: .
+    container_name: cronjob-fe
+    hostname: cronjob-fe
+    ports:
+      - 80:80
