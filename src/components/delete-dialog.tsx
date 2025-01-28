@@ -9,10 +9,16 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 
-export default function DeleteDialog() {
+export default function DeleteDialog({
+  jobId,
+  onDelete,
+}: {
+  jobId: string;
+  onDelete: (jobId: string) => void;
+}) {
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="ghost"><Trash /></Button>
       </DialogTrigger>
       <DialogContent>
@@ -20,10 +26,7 @@ export default function DeleteDialog() {
           <DialogTitle>Are you sure to delete this job?</DialogTitle>
         </DialogHeader>
         <DialogFooter>
-          <Button type="submit" variant="outline">
-            Cancel
-          </Button>
-          <Button type="submit" variant="destructive">Confirm</Button>
+          <Button type="submit" variant="destructive" onClick={() => onDelete(jobId)} >Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

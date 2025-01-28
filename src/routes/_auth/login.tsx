@@ -19,14 +19,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Link } from '@tanstack/react-router'
+import axios from 'axios'
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginForm,
 })
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
+  email: z.string().email({
+    message: 'Must be a valid email.',
   }),
   password: z.string().min(8, {
     message: 'Password must be at least 8 characters.',
@@ -39,14 +41,21 @@ function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    navigate({ to: '/' })
+    axios.post('http://localhost:8080/api/v1/auth/login', values)
+      .then(response => {
+        localStorage.setItem("accessToken", response.data.data.token);
+        navigate({ to: '/' })
+      })
+      .catch(error => {
+        console.log(error);
+      })
+    
   }
   return (
     <div className="flex flex-col gap-6">
@@ -54,7 +63,7 @@ function LoginForm() {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your username below to login to your account
+            Enter your Email below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -63,10 +72,10 @@ function LoginForm() {
               <div className="flex flex-col gap-6">
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -93,9 +102,9 @@ function LoginForm() {
               </div>
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{' '}
-                <a href="#" className="underline underline-offset-4">
+                <Link to="/register" className="underline underline-offset-4">
                   Sign up
-                </a>
+                </Link>
               </div>
             </form>
           </Form>

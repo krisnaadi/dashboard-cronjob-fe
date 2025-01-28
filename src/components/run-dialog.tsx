@@ -2,10 +2,16 @@ import { Play } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
 
-export default function RunDialog() {
+export default function RunDialog({
+  jobId,
+  onRun,
+}: {
+  jobId: string;
+  onRun: (jobId: string) => void;
+}) {
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="ghost"><Play /></Button>
       </DialogTrigger>
       <DialogContent>
@@ -13,8 +19,7 @@ export default function RunDialog() {
           <DialogTitle>Are you sure to run this task?</DialogTitle>
         </DialogHeader>
         <DialogFooter>
-          <Button type="submit" variant="destructive">Cancel</Button>
-          <Button type="submit">Confirm</Button>
+          <Button type="submit" onClick={() => onRun(jobId)}>Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

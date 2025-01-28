@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Logs } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -31,52 +30,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import RunDialog from "@/components/run-dialog";
-import EditDialog from "@/components/edit-dialog";
-import DeleteDialog from "@/components/delete-dialog";
-import CreateDialog from "@/components/create-dialog";
+import { Log } from "@/components/types";
 import axios from "axios";
-import { Job } from "@/components/types";
-import { useToast } from "@/hooks/use-toast";
 
-export const Route = createFileRoute("/_app/")({
-  component: HomeComponent,
+export const Route = createFileRoute("/_app/logs/$jobId")({
+  component: RouteComponent,
 });
 
-function HomeComponent() {
-  const { toast } = useToast()
-  const [data, setData] = useState<Job[]>([]);
+function RouteComponent() {
+  const { jobId } = Route.useParams();
+  
+  const [data, setData] = useState<Log[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const reloadData = async () => {
     try {
       const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       };
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:8080/api/v1/jobs",
-        config
-      );
-      const jobs: Job[] = response.data.data.map((item: any) => ({
+      const response = await axios.get(`http://localhost:8080/api/v1/jobs/${jobId}/logs`, config);
+      const logs: Log[] = response.data.data.map((item: any) => ({
         id: item.id,
-        schedule: item.schedule,
-        name: item.name,
+        executionTime: item.execution_time,
+        duration: item.duration,
         status: item.status,
-        task: item.task,
+        errorMessage: item.error_message,
       }));
-
-      setData(jobs);
+  
+      setData(logs);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -86,89 +73,42 @@ function HomeComponent() {
     }
   };
 
-  const handleDelete = async (jobId: string) => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      };
-      await axios.delete(`http://localhost:8080/api/v1/jobs/${jobId}`, config);
-      await reloadData();
-    } catch (error) {
-      console.error("Error deleting job:", error);
-    }
+  const startPolling = (interval: number) => {
+    const pollInterval = setInterval(() => {
+      reloadData();
+    }, interval);
+  
+    return pollInterval;
   };
-
-  const handleRun = async (jobId: string) => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      };
-      await axios.post(`http://localhost:8080/api/v1/jobs/${jobId}/run`, {}, config);
-      toast({
-        title: "Job started",
-        description: "The job has been started.",
-      })
-    } catch (error) {
-      console.error("Error running job:", error);
-    }
-  };
-
-  const columns: ColumnDef<Job>[] = [
+  
+  const columns: ColumnDef<Log>[] = [
     {
-      accessorKey: "schedule",
-      header: "Schedule",
-      cell: ({ row }) => <div>{row.getValue("schedule")}</div>,
+      accessorKey: "executionTime",
+      header: "Execution Time",
+      cell: ({ row }) => <div>{row.getValue("executionTime")}</div>,
     },
     {
-      accessorKey: "name",
-      header: "Job Name",
-      cell: ({ row }) => <div>{row.getValue("name")}</div>,
+      accessorKey: "duration",
+      header: "Duration",
+      cell: ({ row }) => <div>{row.getValue("duration")}</div>,
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <div className="capitalize">
-          {row.getValue("status") ? "active" : "inactive"}
-        </div>
+        <div className="capitalize">{row.getValue("status") ? "success" : "failed"}</div>
       ),
     },
     {
-      accessorKey: "task",
-      header: "Task",
-      cell: ({ row }) => <div>{row.getValue("task")}</div>,
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const job = row.original;
-
-        return (
-          <div className="flex gap-1">
-            <RunDialog jobId={job.id} onRun={handleRun}/>
-            <Link to="/logs/$jobId"
-              params={{
-                jobId: job.id,
-              }}>
-              <Button variant="ghost">
-                <Logs />
-              </Button>
-            </Link>
-            <EditDialog job={job} onSuccess={reloadData} />
-            <DeleteDialog jobId={job.id} onDelete={handleDelete} />
-          </div>
-        );
-      },
+      accessorKey: "errorMessage",
+      header: "Error Message",
+      cell: ({ row }) => <div>{row.getValue("errorMessage")}</div>,
     },
   ];
 
   useEffect(() => {
     reloadData();
+    startPolling(5000);
   }, []);
 
   const table = useReactTable({
@@ -193,18 +133,9 @@ function HomeComponent() {
   return (
     <div className="w-full">
       <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Jobs</h1>
-        <CreateDialog onSuccess={reloadData} />
+        <h1 className="text-2xl font-semibold tracking-tight">Job Logs</h1>
       </div>
       <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter job name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -220,7 +151,9 @@ function HomeComponent() {
                   key={column.id}
                   className="capitalize"
                   checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  onCheckedChange={(value) =>
+                    column.toggleVisibility(!!value)
+                  }
                 >
                   {column.id}
                 </DropdownMenuCheckboxItem>

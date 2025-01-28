@@ -6,17 +6,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import axios from 'axios'
+import { useToast } from "@/hooks/use-toast"
 
 export const Route = createFileRoute('/_auth/register')({
   component: RouteComponent,
 })
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
+  email: z.string().email({
+    message: 'Must be a valid email.',
   }),
   name: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
+    message: 'Name must be at least 2 characters.',
   }),
   password: z.string().min(8, {
     message: 'Password must be at least 8 characters.',
@@ -31,11 +33,13 @@ const formSchema = z.object({
 
 function RouteComponent() {
   const navigate = useNavigate({ from: '/register' })
+
+  const { toast } = useToast()
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
       confirmPassword: '',
       name: '',
@@ -43,8 +47,16 @@ function RouteComponent() {
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    navigate({ to: '/login' })
+    axios.post('http://localhost:8080/api/v1/auth/signup', values)
+      .then(() => {
+        toast({
+          title: "Registered! Please login.",
+        })
+        navigate({ to: '/login' });
+      })
+      .catch(error => {
+        console.log(error);
+      })
   }
   return (
     <div className="flex flex-col gap-6">
@@ -74,10 +86,10 @@ function RouteComponent() {
                 />
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -105,14 +117,14 @@ function RouteComponent() {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="confirmPassword" {...field} />
+                        <Input type="password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" className="w-full">
-                  Login
+                  Register
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

@@ -8,11 +8,19 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import FormJob from "./form-job";
 
-export default function CreateDialog() {
+export default function CreateDialog({ onSuccess }: { onSuccess: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSuccess = () => {
+    setIsOpen(false);
+    onSuccess();
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus /> Add Job
@@ -26,7 +34,8 @@ export default function CreateDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <FormJob />
+          {/* Pass the handleSuccess callback */}
+          <FormJob onSuccess={handleSuccess} />
         </div>
       </DialogContent>
     </Dialog>

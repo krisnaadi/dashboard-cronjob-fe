@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/toaster'
 import { Outlet, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_auth')({
@@ -10,6 +11,7 @@ function LayoutComponent() {
       <div className="w-full max-w-sm">
         <Outlet />
       </div>
+      <Toaster />
     </div>
   )
 }
