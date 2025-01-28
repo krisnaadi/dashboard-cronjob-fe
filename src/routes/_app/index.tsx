@@ -43,6 +43,8 @@ export const Route = createFileRoute("/_app/")({
   component: HomeComponent,
 });
 
+const host = import.meta.env.VITE_API_URL;
+
 function HomeComponent() {
   const { toast } = useToast()
   const [data, setData] = useState<Job[]>([]);
@@ -65,7 +67,7 @@ function HomeComponent() {
       };
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:8080/api/v1/jobs",
+        `${host}/api/v1/jobs`,
         config
       );
       const jobs: Job[] = response.data.data.map((item: any) => ({
@@ -93,7 +95,7 @@ function HomeComponent() {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       };
-      await axios.delete(`http://localhost:8080/api/v1/jobs/${jobId}`, config);
+      await axios.delete(`${host}/api/v1/jobs/${jobId}`, config);
       await reloadData();
     } catch (error) {
       console.error("Error deleting job:", error);
@@ -107,7 +109,7 @@ function HomeComponent() {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       };
-      await axios.post(`http://localhost:8080/api/v1/jobs/${jobId}/run`, {}, config);
+      await axios.post(`${host}/api/v1/jobs/${jobId}/run`, {}, config);
       toast({
         title: "Job started",
         description: "The job has been started.",

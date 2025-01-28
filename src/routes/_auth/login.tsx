@@ -36,6 +36,8 @@ const formSchema = z.object({
   }),
 })
 
+const host = import.meta.env.VITE_API_URL;
+
 function LoginForm() {
   const navigate = useNavigate({ from: '/login' })
 
@@ -51,7 +53,7 @@ function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    await axios.post('http://localhost:8080/api/v1/auth/login', values)
+    await axios.post(`${host}/api/v1/auth/login`, values)
       .then(response => {
         localStorage.setItem("accessToken", response.data.data.token);
         navigate({ to: '/' })

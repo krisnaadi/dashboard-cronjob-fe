@@ -37,6 +37,8 @@ export const Route = createFileRoute("/_app/logs/$jobId")({
   component: RouteComponent,
 });
 
+const host = import.meta.env.VITE_API_URL;
+
 function RouteComponent() {
   const { jobId } = Route.useParams();
   
@@ -54,7 +56,7 @@ function RouteComponent() {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       };
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/v1/jobs/${jobId}/logs`, config);
+      const response = await axios.get(`${host}/api/v1/jobs/${jobId}/logs`, config);
       const logs: Log[] = response.data.data.map((item: any) => ({
         id: item.id,
         executionTime: item.execution_time,

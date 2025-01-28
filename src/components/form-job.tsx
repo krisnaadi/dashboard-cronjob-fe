@@ -30,6 +30,8 @@ const formSchema = z.object({
   status: z.boolean(),
 });
 
+const host = import.meta.env.VITE_API_URL;
+
 export default function FormJob({
   initialData,
   onSuccess,
@@ -57,10 +59,10 @@ export default function FormJob({
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       };
       if (values.id) {
-        await axios.put(`http://localhost:8080/api/v1/jobs/${values.id}`, values, config);
+        await axios.put(`${host}/api/v1/jobs/${values.id}`, values, config);
         console.log("Updated successfully", values);
       } else {
-        await axios.post("http://localhost:8080/api/v1/jobs", values, config);
+        await axios.post(`${host}/api/v1/jobs`, values, config);
         console.log("Inserted successfully", values);
       }
       if (onSuccess) onSuccess();

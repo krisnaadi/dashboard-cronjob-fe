@@ -32,6 +32,8 @@ const formSchema = z.object({
   path: ['confirmPassword'],
 })
 
+const host = import.meta.env.VITE_API_URL;
+
 function RouteComponent() {
   const navigate = useNavigate({ from: '/register' })
 
@@ -51,7 +53,7 @@ function RouteComponent() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    await axios.post('http://localhost:8080/api/v1/auth/signup', values)
+    await axios.post(`${host}/api/v1/auth/signup`, values)
       .then(() => {
         toast({
           title: "Registered! Please login.",
